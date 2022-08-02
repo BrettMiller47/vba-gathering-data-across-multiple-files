@@ -1,0 +1,51 @@
+Sub combine_raw_data()
+    
+    Application.DisplayAlerts = False
+    Application.ScreenUpdating = False
+    Application.StatusBar = "Gathering Data - please be patient!"
+    
+    ' Clear raw data tab of any previous data
+    Dim maxRow As Long
+    maxRow = shRawData.Rows.Count
+    shRawData.Rows(2 & ":" & maxRow).ClearContents
+    
+    ' Store the filepath for input folder in a variable
+    Dim inputFolderPath As String
+    inputFolderPath = ""
+    
+    ' Store the main and raw workbook names in a variable
+    Dim mainWbName, rawWbName As String
+    mainWbName = ActiveWorkbook.Name
+    rawWbName = Dir(inputFolderPath)
+    
+    ' For each file in inputPath:
+    While Len(rawWbName) > 0:
+        ' open the raw data file
+        Workbooks.Open (inputFolderPath & rawWbName)
+        Workbooks(rawWbName).Activate
+        
+        ' copy the raw data
+        Dim lastRowRawData As Long
+        lastRowRawData = ActiveSheet.Cells(Rows.Count, 1).End(xlUp).Row
+        Range("A2:C" & lastRowRawData).Copy
+        
+        ' get the destination row for the paste range
+        Dim pasteRowRawData As Long
+        pasteRowRawData = shRawData.Cells(Rows.Count, 1).End(xlUp).Row + 1
+        
+        ' paste into the row underneath the last cell with data in column 1
+        Workbooks(mainWbName).Activate
+        shRawData.Cells(pasteRowRawData, 1).PasteSpecial xlPasteValues
+    
+        ' close the raw data workbook and activate main workbook
+        Workbooks(rawWbName).Close
+        
+        ' set the variable for raw workbook name (rawWbName) to the next raw data file
+        rawWbName = Dir()
+    Wend
+    
+    Application.DisplayAlerts = True
+    Application.ScreenUpdating = True
+    Application.StatusBar = "Ready"
+
+End Sub
